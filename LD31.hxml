@@ -1,3 +1,7 @@
+-lib consolitis
+-lib hxsl
+-lib flywheel
+-lib delta
 -cp src
 -swf bin/LD31.swf
 -swf-header 800:600:60:FFFFFF
