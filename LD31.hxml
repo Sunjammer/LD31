@@ -1,0 +1,5 @@
+-cp src
+-swf bin/LD31.swf
+-swf-header 800:600:60:FFFFFF
+-swf-version 14
+-main furusystems.Main
