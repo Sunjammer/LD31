@@ -8,6 +8,16 @@ using furusystems.colors.ColorUtils;
  */
 class BitmapToAscii
 {
+	/*static inline var BLACK = "@";
+	static inline var CHARCOAL = "#";
+	static inline var DARKGRAY = "8";
+	static inline var MEDIUMGRAY = "&";
+	static inline var MEDIUM = "o";
+	static inline var GRAY = ":";
+	static inline var SLATEGRAY = "*";
+	static inline var LIGHTGRAY = ".";
+	static inline var WHITE = " ";*/
+	
 	static inline var BLACK = "@";
 	static inline var CHARCOAL = "#";
 	static inline var DARKGRAY = "8";
@@ -18,7 +28,7 @@ class BitmapToAscii
 	static inline var LIGHTGRAY = ".";
 	static inline var WHITE = " ";
 	
-	public static function convert(bmp:BitmapData, strideX:Int = 8, strideY:Int = 16):String {
+	public static function convert(bmp:BitmapData, strideX:Int = 8, strideY:Int = 16, invert:Bool = false):String {
 		var temp = new Color3();
 		var str = "";
 		var y = 0;
@@ -32,7 +42,11 @@ class BitmapToAscii
 				xiter++;
 				temp.setFromHex(bmp.getPixel(x, y));
 				temp.desaturate(1);
-                str += getGrayShade(Std.int(temp.r * 255));
+				if (invert) {
+					str += getGrayShade(255-Std.int(temp.r * 255));
+				}else {
+					str += getGrayShade(Std.int(temp.r * 255));
+				}
 
 				x += strideX;
                 if (x >= bmp.width - 1) {

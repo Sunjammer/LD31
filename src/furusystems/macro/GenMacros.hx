@@ -10,7 +10,7 @@ import haxe.macro.Expr;
 class GenMacros
 {
 	macro public static function boom():Expr {
-		var p = Generator.genPalette(1);
+		var p = Generator.genPalette(Std.random(10+20));
 		return macro $v{p};
 	}
 }

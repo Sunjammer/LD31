@@ -2,13 +2,17 @@ package furusystems;
 
 import com.furusystems.flywheel.utils.time.StopWatch;
 import flash.display.Bitmap;
+import flash.display.BitmapData;
 import flash.display.Loader;
 import flash.display.LoaderInfo;
 import flash.display.Sprite;
 import flash.display.StageAlign;
 import flash.display.StageScaleMode;
 import flash.events.Event;
+import flash.filters.BlurFilter;
 import flash.filters.GlowFilter;
+import flash.geom.Matrix;
+import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.Lib;
 import flash.net.URLRequest;
@@ -20,6 +24,7 @@ import furusystems.macro.GenMacros;
 import furusystems.shaders.SimpleShader;
 import furusystems.world.gfx.asciiconvert.BitmapToAscii;
 import furusystems.world.gfx.TimedPrinter;
+import tween.Delta;
 using furusystems.world.gfx.TimedPrinter;
 /**
  * Ludum Dare 31 "Entire Game on One Screen" (Shit theme)
@@ -35,6 +40,8 @@ class Main extends Sprite
 	var musicID:Int;
 		
 	static var palette:Array<Company> = GenMacros.boom();
+	var bloomables:Sprite;
+	var bloom:BitmapData;
 	
 	
 	public function new() 
@@ -49,25 +56,47 @@ class Main extends Sprite
 		
 		step = 1 / stage.frameRate;
 		
+		bloomables = new Sprite();
+		addChild(bloomables);
+		
+		bloom = new BitmapData(cast stage.stageWidth, cast stage.stageHeight, true, 0);
+		
 		console = new Console();
 		console.showSource = false;
 		console.maxLines = 300;
-		console.alpha = 0.98;
+		console.background.alpha = 0.6;
 		console.setSize(new Rectangle(0, 0, stage.stageWidth, stage.stageHeight));
-		console.outField.filters = [new GlowFilter(0xFFFFFF, 0.2, 16, 16, 1)];
 		console.outField.mouseEnabled = false;
 		
-		addChild(console);
+		bloomables.addChild(console);
 		
-		console.createCommand("asciiArt", createAscii);
+		//TimedPrinter.processor = function(str:String):String { return erodeLine(str); };
 		
-		createAscii("binaries/test.png");
+		//console.createCommand("asciiArt", createAscii);
+		//console.createCommand("erode", erode);
+		
+		console.createCommand("listing", listCompanies);
+		
+		createAscii("binaries/yoko.jpg");
 		
 		//TimedPrinter.run(FileUtils.getFileContent("assets/images/dangerous.txt"));
 		//"Done".run(SYSTEM);
 		
 		stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
 		stage.stage3Ds[0].requestContext3D();
+		
+		var b = new Bitmap(bloom);
+		//b.alpha = 0.4;
+		b.blendMode = ADD;
+		//b.scaleX = b.scaleY = 2;
+		addChild(b);
+	}
+	
+	function listCompanies() 
+	{
+		for (c in palette) {
+			c.name.run();
+		}
 	}
 	
 	function createAscii(url:String) 
@@ -81,6 +110,21 @@ class Main extends Sprite
 	function handleConsoleInput(str:String):Dynamic 
 	{
 		return null;
+	}
+	
+	function erode() {
+		for (l in console.lines) {
+			l.str = erodeLine(l.str);
+		}
+	}
+	
+	function erodeLine(l:String):String 
+	{
+		var a = l.split("");
+		for (i in 0...2) {
+			a[Std.random(a.length)] = String.fromCharCode(Std.random(255));
+		}
+		return a.join("");
 	}
 	
 	private function onContextCreated(e:Event):Void 
@@ -108,7 +152,7 @@ class Main extends Sprite
 		ldr.removeEventListener(Event.COMPLETE, onImageLoaded);
 		var img = ldr.loader.content;
 		var bmp:Bitmap = cast img;
-		trace("Image loaded: " + bmp.bitmapData);
+		trace("//// DECRYPT: " + ldr.url, WARNING);
 		BitmapToAscii.convert(bmp.bitmapData).run();
 	}
 	
@@ -120,6 +164,7 @@ class Main extends Sprite
 	inline function gameLoop() 
 	{
 		time += step;
+		Delta.step(step);
 		updateAudio();
 		updateBackground();
 	}
@@ -131,7 +176,15 @@ class Main extends Sprite
 	
 	inline function updateBackground() 
 	{
-		var v = Math.random()*.5;
+		bloom.lock();
+		bloom.fillRect(bloom.rect, 0);
+		var mat = new Matrix();
+		//mat.scale(0.5, 0.5);
+		bloom.draw(console.outField, mat);
+		for(i in 0...2) bloom.applyFilter(bloom, bloom.rect, new Point(), new BlurFilter(16, 4));
+		bloom.unlock();
+		
+		var v = Math.random()*.04;
 		c3d.clear(v,v,v);
 		c3d.present();
 	}

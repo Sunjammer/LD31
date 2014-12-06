@@ -4,6 +4,6 @@
 -lib delta
 -cp src
 -swf bin/LD31.swf
--swf-header 705:800:60:FFFFFF
+-swf-header 705:600:40:FFFFFF
 -swf-version 14
 -main furusystems.Main
