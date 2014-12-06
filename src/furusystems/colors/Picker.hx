@@ -18,22 +18,6 @@ class Picker
 {
 	var wheel:BitmapData;
 	var center:Vector2D;
-	static var utilVec3:Vector3D = new Vector3D();
-	static var grayDot:Vector3D = new Vector3D(0.2126, 0.7152, 0.0722);
-	static var black:Vector3D = new Vector3D();
-	function brightness(vec:Vector3D, v:Float):Vector3D {
-		return mix(black, vec, v);
-	}
-	function desaturate(vec:Vector3D, v:Float):Vector3D {
-		var d = grayDot.dotProduct(vec);
-		return mix(vec, new Vector3D(d, d, d), v);
-	}
-	inline function mix(a:Vector3D, b:Vector3D, v:Float):Vector3D {
-		return new Vector3D(
-			a.x + (b.x - a.x) * v,
-			a.y + (b.y - a.y) * v,
-			a.z + (b.z - a.z) * v);
-	}
 	public function new() 
 	{
 		wheel = new Wheel(365, 365,false);
@@ -48,7 +32,7 @@ class Picker
 		utilVec.x = center.x + Math.cos(angle) * magnitude * center.x;
 		utilVec.y = center.y + Math.sin(angle) * magnitude * center.y;
 		utilVec.truncate(364);
-		return cast(brightness(desaturate(Color3.fromHex(wheel.getPixel(cast utilVec.x, cast utilVec.y)), saturation), brightnessValue), Color3).toHex();
+		return cast(brightness(ColorUtils.desaturate(Color3.fromHex(wheel.getPixel(cast utilVec.x, cast utilVec.y)), saturation), brightnessValue), Color3).toHex();
 	}
 	
 	public function getPalette(startAngle:Float, startMag:Float, spreadX:Float, spreadY:Float, saturation:Float = 1, brightnessValue:Float = 1):Palette {
